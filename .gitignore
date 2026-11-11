@@ -1,0 +1,5 @@
+venv/
+hf-cache/
+*.wav
+*.mp3
+__pycache__/
