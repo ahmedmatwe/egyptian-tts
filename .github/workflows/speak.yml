@@ -3,7 +3,9 @@ run-name: speak ${{ inputs.request_id || github.event.client_payload.request_id 
 on:
   workflow_dispatch:
     inputs:
-      text: {description: "النص بالعامية المصرية", required: true, default: "أهلا يا جماعة، ده صوت مصري من جيت هب."}
+      text: {description: "النص بالعامية المصرية (أو سيبه فاضي واستخدم batch)", required: false, default: ""}
+      batch: {description: "JSON: [{id,text,voice,exaggeration}] لحلقة كاملة مرة واحدة", required: false, default: ""}
+      voice: {description: "اسم صوت من voices/ (اختياري)", required: false, default: ""}
       request_id: {description: "اسم للطلب (بيتحط في اسم الملف)", required: false, default: "manual"}
       exaggeration: {description: "0.3 - 1.0", required: false, default: "0.6"}
       seed: {required: false, default: "7"}
@@ -16,6 +18,8 @@ jobs:
     env:
       HF_HOME: ${{ github.workspace }}/hf-cache
       TEXT: ${{ inputs.text || github.event.client_payload.text }}
+      BATCH: ${{ inputs.batch || toJSON(github.event.client_payload.batch) }}
+      VOICE: ${{ inputs.voice || github.event.client_payload.voice }}
       RID: ${{ inputs.request_id || github.event.client_payload.request_id || 'manual' }}
       EXAG: ${{ inputs.exaggeration || github.event.client_payload.exaggeration || '0.6' }}
       SEED: ${{ inputs.seed || github.event.client_payload.seed || '7' }}
@@ -34,7 +38,13 @@ jobs:
       - name: Speak
         run: |
           s=$(date +%s)
-          python tts.py "$TEXT" "speech-$RID.wav" --exaggeration "$EXAG" --seed "$SEED"
+          if [ -n "$BATCH" ] && [ "$BATCH" != "null" ]; then
+            printf '%s' "$BATCH" > lines.json
+            python tts.py --batch lines.json "speech-$RID"
+          else
+            mkdir -p "speech-$RID"
+            python tts.py "$TEXT" "speech-$RID/speech.wav" ${VOICE:+"$VOICE"} --exaggeration "$EXAG" --seed "$SEED"
+          fi
           echo "::notice::generated in $(( $(date +%s) - s ))s"
       - uses: actions/upload-artifact@v4
-        with: {name: "speech-${{ env.RID }}", path: "speech-*.wav", retention-days: 1}
+        with: {name: "speech-${{ env.RID }}", path: "speech-${{ env.RID }}/", retention-days: 1}

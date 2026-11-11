@@ -1,5 +1,6 @@
 venv/
 hf-cache/
 *.wav
+!voices/*.wav
 *.mp3
 __pycache__/

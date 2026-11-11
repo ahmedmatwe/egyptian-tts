@@ -23,3 +23,7 @@
 - يدوي: Actions → speak → Run workflow، أو: `gh workflow run speak -R ahmedmatwe/egyptian-tts -f text="..." -f request_id=ep1`
 - من مشروع تاني: `repository_dispatch` بنوع `speak` و `client_payload: {text, request_id, exaggeration, seed}`، وبعدين حمّل الـ artifact `speech-<request_id>` وامسحه.
 - ملفات الصوت بتتمسح لوحدها بعد يوم، والمشاريع بتمسحها أول ما تاخدها.
+
+## أصوات الشخصيات
+`voices/<اسم>.wav` عينة لكل شخصية (sayed_fahlawa, zizo_trend, om_abdo, abdo_ekhtera, am_ragab). ممكن تبدّلها بتسجيلات بصوتك أو بصوت حد موافق.
+- حلقة كاملة مرة واحدة: `python tts.py --batch lines.json out_dir` حيث `lines.json` = `[{"id":"l01","text":"...","voice":"zizo_trend"}]`
